@@ -21,7 +21,7 @@ const Body = () => {
             dispatch(addUser(user.data))
 
         } catch (err) {
-            if(err.status === 401) {
+            if(err?.response?.status === 401) {
                 navigate("/login")
             }
             console.error(err);
@@ -33,12 +33,23 @@ const Body = () => {
     }, [])
 
 
-    return (
-    <div>
-        <NavBar />
-        <Outlet />
-        <Footer />
-    </div>
-    )
+   return (
+        <div className="min-h-screen bg-soft-gradient flex flex-col items-center py-4 sm:py-6 md:py-8 font-sans">
+            
+            <div className="card w-full max-w-5xl bg-base-100 shadow-xl flex-grow">
+                <div className="card-body p-4 md:p-6 flex flex-col">
+                    
+                    <NavBar />
+                    
+                    <main className="flex-grow mt-4">
+                        <Outlet />
+                    </main>
+                    <Footer />
+
+                </div>
+            </div>
+        </div>
+    );
 };
+
 export default Body;

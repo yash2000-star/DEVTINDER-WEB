@@ -1,5 +1,6 @@
+// src/components/EditProfile.jsx
+
 import { useState } from "react";
-import UserCard from "./UserCard";
 import axios from "axios";
 import { BASE_URL } from "../utils/contants";
 import { useDispatch } from "react-redux";
@@ -8,118 +9,93 @@ import { addUser } from "../utils/userSlice";
 const EditProfile = ({ user }) => {
     const [firstName, setFirstName] = useState(user.firstName);
     const [lastName, setLastName] = useState(user.lastName);
-    const [photoUrl,, setPhotoUrl] = useState(user.photoUrl);
     const [age, setAge] = useState(user.age || "");
-    const [gender, setGender] = useState(user.gender);
+    const [gender, setGender] = useState(user.gender || ""); 
     const [about, setAbout] = useState(user.about);
-    const [error, setError] = useState("")
+    const [error, setError] = useState("");
     const dispatch = useDispatch();
     const [showToast, setShowToast] = useState(false);
-
+    
     const saveProfile = async () => {
         try {
-            const res = await axios.patch(BASE_URL + "/profile/edit", {firstName, lastName, photoUrl, age, gender, about}, {withCredentials: true})
+            const res = await axios.patch(BASE_URL + "/profile/edit", {
+                firstName, 
+                lastName, 
+                photoUrl: user.photoUrl, 
+                age: Number(age), 
+                gender, 
+                about 
+            }, { withCredentials: true });
             dispatch(addUser(res?.data?.data));
+            setError(""); 
             setShowToast(true);
             setTimeout(() => {
-                setShowToast(false)
+                setShowToast(false);
             }, 3000);
-
         } catch (err) {
-            setError(err.response.data); // check 
+            setError(err?.response?.data || "Failed to save profile.");
         }
-    }
+    };
 
-      
     return (
-       <>
-        <div className="flex justify-center my-10">
-        <div className="flex justify-center mx-10">
-      <div className="card bg-base-300 w-96 shadow-xl">
-        <div className="card-body">
-          <h2 className="card-title justify-center">Edit Profile</h2>
+        <>
+            <form className="space-y-4 max-w-2xl mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="form-control">
+                        <label className="label"><span className="label-text">First Name</span></label>
+                        <input type="text" className="input input-bordered w-full" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+                    </div>
+                    <div className="form-control">
+                        <label className="label"><span className="label-text">Last Name</span></label>
+                        <input type="text" className="input input-bordered w-full" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+                    </div>
+                </div>
 
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend my-2">First Name</legend>
-            <input
-              type="text"
-              className="input w-full my-1"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-            />
-          </fieldset>
+                <div className="form-control">
+                    <label className="label"><span className="label-text">Profile Photo</span></label>
+                    <input type="file" className="file-input file-input-bordered w-full max-w-xs" />
+                    <p className="text-xs text-base-content/60 mt-1">Note: Photo upload is for UI demo purposes.</p>
+                </div>
 
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend my-2">Last Name</legend>
-            <input
-              type="text"
-              className="input w-full my-1"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-            />
-          </fieldset>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="form-control">
+                        <label className="label"><span className="label-text">Age</span></label>
+                        <input type="number" className="input input-bordered w-full" value={age} onChange={(e) => setAge(e.target.value)} />
+                    </div>
+                    <div className="form-control">
+                        <label className="label"><span className="label-text">Gender</span></label>
+                        <select className="select select-bordered w-full" value={gender} onChange={(e) => setGender(e.target.value)}>
+                            <option value="" disabled>Select...</option>
+                            <option>Male</option>
+                            <option>Female</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                </div>
 
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend my-2">Photo URL</legend>
-            <input
-              type="text"
-              className="input w-full my-1"
-              value={photoUrl}
-              onChange={(e) => setPhotoUrl(e.target.value)}
-            />
-          </fieldset>
+                <div className="form-control">
+                    <label className="label"><span className="label-text">About</span></label>
+                    <textarea className="textarea textarea-bordered h-24" placeholder="Tell us about yourself" value={about} onChange={(e) => setAbout(e.target.value)} />
+                </div>
 
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend my-2">Age</legend>
-            <input
-              type="text"
-              className="input w-full my-1"
-              value={age}
-              onChange={(e) => setAge(e.target.value)}
-            />
-          </fieldset>
+                {error && <p className="text-error text-center text-sm">{error}</p>}
 
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend my-2">Gender</legend>
-            <select className="select w-full mt-1" 
-            value={gender} 
-            onChange={(e) => setGender(e.target.value)}
-            >
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-            </select>
-          </fieldset>
+                <div className="flex justify-end pt-4">
+                    <button type="button" className="btn btn-primary" onClick={saveProfile}>
+                        Save Profile
+                    </button>
+                </div>
+            </form>
 
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend my-2">About</legend>
-            <input
-              type="text"
-              className="input w-full my-1"
-              value={about}
-              onChange={(e) => setAbout(e.target.value)}
-            />
-          </fieldset>
-
-         <p className="text-red-500">ERROR Message is here!!</p>
-          <div className="card-actions justify-center">
-            <button className="btn btn-primary" onClick={saveProfile}>Save Profile</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <UserCard user={{firstName, lastName, photoUrl, age, gender, about }} />
-    </div>
-   {showToast && ( <div className="toast toast-top toast-center">
-  <div className="alert alert-success">
-    <span>Profile saved successfully.</span>
-  </div>
-</div>
-)}
-    </>
-
-    )
+            {showToast && (
+                <div className="toast toast-top toast-end">
+                    <div className="alert alert-success">
+                        <span>Profile saved successfully!</span>
+                    </div>
+                </div>
+            )}
+        </>
+    );
 };
 
 export default EditProfile;

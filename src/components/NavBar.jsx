@@ -1,64 +1,97 @@
+// src/components/NavBar.jsx
+
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { BASE_URL } from "../utils/contants";
+import { removeUser } from "../utils/userSlice";
 
 const NavBar = () => {
-const user = useSelector((store) => store.user);
-const dispatch = useDispatch(); 
-const navigate = useNavigate();
+  const user = useSelector((store) => store.user);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation(); 
 
-const handleLogout = async () => {
+  const handleLogout = async () => {
+    try {
+      await axios.post(`${BASE_URL}/logout`, {}, { withCredentials: true });
+      dispatch(removeUser());
+      navigate("/login");
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
+  };
 
-  try {
-    await axios.post(BASE_URL + "/logout", {}, { withCredentials: true });
-    dispatch(removeUser());
-    return navigate("/login")
-  } catch (err) {
-    //Error Logic
-  }
-}
+  const navLinks = [
+    { name: "Profile", path: "/profile" },
+    { name: "Connections", path: "/connections" },
+    { name: "Requests", path: "/requests" },
+    // You can add more links like 'Jobs' or 'Messaging' here in the future
+  ];
 
-    return (
-    <div className="navbar bg-base-300 shadow-sm">
-  <div className="flex-1">
-    <Link to="/" className="btn btn-ghost text-xl">DevTinder</Link>
-  </div>
-  {user && (
-  <div className="flex gap-2">
-    <p>Welcome, {user.firstName}</p>
-       <div className="dropdown dropdown-end mx-5 items-center">
-      <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
-        <div className="w-10 rounded-full">
-          <img
-            alt="user photo"
-            src={user.photoUrl} />
-        </div>
+  if (!user) return null; 
+  return (
+    <header className="flex justify-between items-center border-b border-base-200 pb-4">
+      
+      <div className="flex items-center gap-8">
+        <Link to="/" className="text-2xl font-bold text-primary">
+          DevTinder
+        </Link>
+        <nav className="hidden md:flex items-center gap-6">
+          {navLinks.map((link) => (
+            <Link
+              key={link.path}
+              to={link.path}
+              className={`pb-1 text-lg hover:text-primary transition-colors ${
+                location.pathname.startsWith(link.path)
+                  ? "text-primary font-semibold border-b-2 border-primary"
+                  : "text-base-content/70"
+              }`}
+            >
+              {link.name}
+            </Link>
+          ))}
+        </nav>
       </div>
-      <ul
-        tabIndex={0}
-        className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
-        <li>
-          <Link to="/profile" className="justify-between">
-            Profile
-            <span className="badge">New</span>
-          </Link>
-        </li>
-        <li>
-          <Link to="/connections">Connections</Link>
+
+      <div className="dropdown dropdown-end">
+        <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
+          <div className="w-12 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+            <img
+              src={user.photoUrl || `https://ui-avatars.com/api/?name=${user.firstName}+${user.lastName}`}
+              alt="User avatar"
+            />
+          </div>
+        </label>
+        
+        <ul
+          tabIndex={0}
+          className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52"
+        >
+          <li className="p-2">
+            <p className="font-semibold">Welcome,{user.firstName}</p>
           </li>
-        <li>
+          <div className="divider my-0"></div>
           <li>
-          <Link to="/requests">Requests</Link>
+            <Link to="/profile">
+              Profile
+            </Link>
           </li>
-        <li></li>
-          <a onClick={handleLogout}>Logout</a>
+          <li>
+            <Link to="/connections">Connections</Link>
           </li>
-      </ul>
-    </div>
-  </div>
-  )}
-</div>
+          <li>
+            <Link to="/requests">Requests</Link>
+          </li>
+          <div className="divider my-0"></div>
+          <li>
+            <button onClick={handleLogout} className="text-error">
+              Logout
+            </button>
+          </li>
+        </ul>
+      </div>
+    </header>
   );
 };
 

@@ -1,3 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.bg-soft-gradient {
+  background-color: #f0f2ff; 
+  background-image: linear-gradient(135deg, #e9e7fd 0%, #dde7f9 00%);
+}
