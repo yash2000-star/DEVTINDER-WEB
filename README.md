@@ -35,5 +35,20 @@ Adding a Custom domain name
                           - Enable SSl for website
                         
 
+Sending Emails via SES
+                - Create a IAM user 
+                - Give Access to AmazonSESFull Access
+                - Amazon SES: Create a Identity
+                - Verify your domain name 
+                - Verify an email address
+                - Install AWS SDk - v3
+                - code Example https://github.com/awsdocs/aws-doc-sdk-examples/blob/main/javascriptv3/example_code/ses/src/ses_sendemail.js#L16
+                -Setup SesClient
+                -Access Credentials should be created in IAM under SecurityCredentials Tab
+                -Add the credentials to the new env file
+                -Write code for SesClient
+                -Write code for Sending email address
+                - Make the email dynamic by passing more params to the run function 
 
-qwqwqwqwqw
+
+asasasasasasaasasasassaasaddsdssddsd
