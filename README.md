@@ -12,7 +12,7 @@
         - sudo systemctl stat nginx
         - sudo systemctl enable nginx
         - Copy code from dist to /var/www/html/
-        - sudo scp -r dist/* /var/www/html/ -2
+        - sudo scp -r dist/* /var/www/html/ 
         - Enable port 80
 
 -Backend 
@@ -50,5 +50,4 @@ Sending Emails via SES
                 -Write code for Sending email address
                 - Make the email dynamic by passing more params to the run function 
 
-
-asasasasasasaasasasassaasaddsdssddsd
+sdsddsdsddsdsddssdsddsdsddsdsdsdsdsdsdsd

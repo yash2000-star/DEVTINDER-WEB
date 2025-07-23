@@ -7,6 +7,7 @@ import appStore from "./utils/appStore";
 import Feed from "./components/Feed";
 import Requests from "./components/Requests";
 import Connections from "./components/Connections";
+import Premium from "./components/Premium";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
               <Route path="users/:userId" element={<Profile />} />
               <Route path="connections" element={<Connections />} />
               <Route path="requests" element={<Requests />} />
+              <Route path="premium" element={<Premium />} />
             </Route>
             <Route path="/login" element={<Login />} />
             

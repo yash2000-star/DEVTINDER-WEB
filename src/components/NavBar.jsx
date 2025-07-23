@@ -83,6 +83,9 @@ const NavBar = () => {
           <li>
             <Link to="/requests">Requests</Link>
           </li>
+          <li>
+            <Link to="/premium">Premium</Link>
+          </li>
           <div className="divider my-0"></div>
           <li>
             <button onClick={handleLogout} className="text-error">
