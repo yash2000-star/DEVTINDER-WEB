@@ -13,9 +13,9 @@ const Premium = () => {
       withCredentials: true,
     });
 
-    if (res.data.user && res.data.user.isPremium) {
-          setIsUserPremium(true);
-        }
+    if (res.data.isPremium) {
+      setIsUserPremium(true);
+    }
   };
 
   const handleBuyClick = async (type) => {
@@ -44,10 +44,7 @@ const Premium = () => {
       theme: {
         color: "#F37254",
       },
-      andler: function (response) {
-        console.log("Payment was successful: ", response);
-        setIsUserPremium(true);
-      },
+      handler: verifyPremiumUser,
     };
 
     var rzp = new window.Razorpay(options);
