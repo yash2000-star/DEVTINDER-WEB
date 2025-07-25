@@ -5,39 +5,51 @@ import { BASE_URL } from "../utils/contants";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addConnections } from "../utils/ConnectionsSlice";
-import { Link } from 'react-router-dom'; 
-import { FaUserTimes, FaEye } from 'react-icons/fa'; 
+import { Link } from 'react-router-dom';
+import { FaUserTimes, FaEye } from 'react-icons/fa';
 
 const Connections = () => {
-    const connections = useSelector(store => store.connections);
-    const loggedInUser = useSelector(store => store.user); // <-- add this
+    // ✅ CORRECTED SELECTORS
+    // This now correctly reads the array from the Redux store.
+    const connections = useSelector(store => store.connections) || [];
+    // Assuming user slice stores the user object directly.
+    // If user is at `store.user.user`, change this back to `store.user?.user`.
+    const loggedInUser = useSelector(store => store.user);
+
     const dispatch = useDispatch();
 
-    const fetchConnections = async () => {
-        try {
-            const res = await axios.get(`${BASE_URL}/user/connections`, {
-                withCredentials: true,
-            });
-            dispatch(addConnections(res.data.data));
-        } catch (err) {
-            console.error("Failed to fetch connections:", err);
-        }
-    };
-
     useEffect(() => {
-        if (!connections || connections.length === 0) {
+        const fetchConnections = async () => {
+            try {
+                const res = await axios.get(`${BASE_URL}/user/connections`, {
+                    withCredentials: true,
+                });
+                // Your reducer will put `res.data.data` into the `connections` slice
+                dispatch(addConnections(res.data.data));
+            } catch (err) {
+                console.error("Failed to fetch connections:", err);
+            }
+        };
+
+        // This logic is now sound. It will run once `loggedInUser` is populated.
+        if (loggedInUser && connections.length === 0) {
             fetchConnections();
         }
-    }, []);
+    }, [dispatch, connections.length, loggedInUser]);
 
-    if (!connections) {
+    // --- GUARD CLAUSE ---
+    // If the app is still loading the logged in user, show loading state.
+    if (!loggedInUser) {
         return (
             <div className="text-center p-8">
-                <span className="loading loading-lg loading-spinner"></span>
+                <p>Loading your profile...</p>
+                <span className="loading loading-lg loading-spinner text-primary mt-4"></span>
             </div>
         );
     }
     
+    // After fetch, if connections array is still empty, show "No Connections".
+    // This now correctly checks the populated array.
     if (connections.length === 0) {
         return (
             <div className="text-center p-12 bg-base-200 rounded-lg">
@@ -50,48 +62,51 @@ const Connections = () => {
         );
     }
 
+    // This will now render correctly!
     return (
         <div className="space-y-4">
             {connections.map((connection) => {
-                const isUserFrom = connection.fromUserId._id === loggedInUser._id;
-                const otherUser = isUserFrom ? connection.toUserId : connection.fromUserId;
+                const otherUser = connection.fromUserId._id === loggedInUser._id
+                    ? connection.toUserId
+                    : connection.fromUserId;
+
+                if (!otherUser) return null;
 
                 const { _id, firstName, lastName, photoUrl, about } = otherUser;
 
                 return (
-                    <div 
-                        key={connection._id} 
+                    <div
+                        key={connection._id}
                         className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border border-base-200 rounded-lg hover:bg-base-200 transition-colors"
                     >
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-4 flex-grow">
                             <div className="avatar">
                                 <div className="w-16 rounded-full">
-                                    <img 
-                                        src={photoUrl || `https://ui-avatars.com/api/?name=${firstName}+${lastName}`} 
-                                        alt={`${firstName} ${lastName}`} 
+                                    <img
+                                        src={photoUrl || `https://ui-avatars.com/api/?name=${firstName}+${lastName}`}
+                                        alt={`${firstName} ${lastName}`}
                                     />
                                 </div>
                             </div>
                             <div>
                                 <h3 className="font-bold text-lg">{firstName} {lastName}</h3>
                                 <p className="text-sm text-base-content/70 line-clamp-1">
-                                    {about || "This is a default about the user."}
+                                    {about || "No bio available."}
                                 </p>
                             </div>
-                            <Link to={"/chat/" + _id}>   
-                                <button className="btn btn-primary">Chat</button>
-                            </Link>
                         </div>
 
-                        <div className="flex gap-2">
-                            <button className="btn btn-sm btn-outline btn-error">
-                                <FaUserTimes />
-                                Remove
-                            </button>
-                            <Link to={`/users/${_id}`} className="btn btn-sm btn-primary">
-                                <FaEye />
-                                View Profile
+                        <div className="flex gap-2 items-center shrink-0">
+                            <Link to={"/chat/" + _id}>
+                                <button className="btn btn-sm btn-primary">Chat</button>
                             </Link>
+                            <Link to={`/users/${_id}`} className="btn btn-sm btn-outline">
+                                <FaEye />
+                                Profile
+                            </Link>
+                            <button className="btn btn-sm btn-ghost btn-square text-error">
+                                <FaUserTimes />
+                            </button>
                         </div>
                     </div>
                 );
