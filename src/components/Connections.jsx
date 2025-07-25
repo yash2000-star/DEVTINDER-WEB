@@ -10,6 +10,7 @@ import { FaUserTimes, FaEye } from 'react-icons/fa';
 
 const Connections = () => {
     const connections = useSelector(store => store.connections);
+    const loggedInUser = useSelector(store => store.user); // <-- add this
     const dispatch = useDispatch();
 
     const fetchConnections = async () => {
@@ -28,7 +29,6 @@ const Connections = () => {
             fetchConnections();
         }
     }, []);
-    // ---
 
     if (!connections) {
         return (
@@ -53,11 +53,14 @@ const Connections = () => {
     return (
         <div className="space-y-4">
             {connections.map((connection) => {
-                const { _id, firstName, lastName, photoUrl, about } = connection;
+                const isUserFrom = connection.fromUserId._id === loggedInUser._id;
+                const otherUser = isUserFrom ? connection.toUserId : connection.fromUserId;
+
+                const { _id, firstName, lastName, photoUrl, about } = otherUser;
 
                 return (
                     <div 
-                        key={_id} 
+                        key={connection._id} 
                         className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border border-base-200 rounded-lg hover:bg-base-200 transition-colors"
                     >
                         <div className="flex items-center gap-4">
@@ -75,7 +78,9 @@ const Connections = () => {
                                     {about || "This is a default about the user."}
                                 </p>
                             </div>
-                         <Link to={"/chat/" + _id}>   <button className="btn btn-primary">Chat</button></Link>
+                            <Link to={"/chat/" + _id}>   
+                                <button className="btn btn-primary">Chat</button>
+                            </Link>
                         </div>
 
                         <div className="flex gap-2">
@@ -84,8 +89,8 @@ const Connections = () => {
                                 Remove
                             </button>
                             <Link to={`/users/${_id}`} className="btn btn-sm btn-primary">
-                               <FaEye />
-                                 View Profile
+                                <FaEye />
+                                View Profile
                             </Link>
                         </div>
                     </div>
