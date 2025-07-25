@@ -75,6 +75,7 @@ const Connections = () => {
                                     {about || "This is a default about the user."}
                                 </p>
                             </div>
+                         <Link to={"/chat/" + _id}>   <button className="btn btn-primary">Chat</button></Link>
                         </div>
 
                         <div className="flex gap-2">

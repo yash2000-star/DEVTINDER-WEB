@@ -50,4 +50,7 @@ Sending Emails via SES
                 -Write code for Sending email address
                 - Make the email dynamic by passing more params to the run function 
 
-as
+improve Ui auth in web sockets
+fix bug if i am not friend i should not be able to send messgae
+
+asasasasassaasas
