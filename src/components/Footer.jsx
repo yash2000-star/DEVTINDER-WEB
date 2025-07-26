@@ -1,19 +1,17 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
-    <footer className="mt-8 pt-6 border-t border-base-200">
-      <div className="flex flex-col sm:flex-row justify-between items-center text-sm text-base-content/60">
-        
+    <footer className="py-6 text-sm text-slate-500">
+      <div className="border-t border-slate-900/10 pt-6 flex flex-col sm:flex-row justify-between items-center">
         <p>© {new Date().getFullYear()} DevTinder. All Rights Reserved.</p>
-        
         <nav className="flex gap-4 mt-4 sm:mt-0">
-          <a href="#" className="link link-hover">About</a>
-          <a href="#" className="link link-hover">Privacy</a>
-          <a href="#" className="link link-hover">Terms</a>
-          <a href="#" className="link link-hover">Help</a>
+          <Link to="/about" className="hover:text-slate-900 transition-colors">About</Link>
+          <Link to="/privacy" className="hover:text-slate-900 transition-colors">Privacy</Link>
+          <Link to="/terms" className="hover:text-slate-900 transition-colors">Terms</Link>
+          <Link to="/help" className="hover:text-slate-900 transition-colors">Help</Link>
         </nav>
-        
       </div>
     </footer>
   );

@@ -1,114 +1,99 @@
-// src/pages/connections.jsx
-
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate } from 'react-router-dom';
 import axios from "axios";
 import { BASE_URL } from "../utils/contants";
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { addConnections } from "../utils/ConnectionsSlice";
-import { Link } from 'react-router-dom';
-import { FaUserTimes, FaEye } from 'react-icons/fa';
+// Import new icons for the actions
+import { HiOutlineChatAlt2, HiOutlineTrash } from 'react-icons/hi';
 
 const Connections = () => {
-    // ✅ CORRECTED SELECTORS
-    // This now correctly reads the array from the Redux store.
     const connections = useSelector(store => store.connections) || [];
-    // Assuming user slice stores the user object directly.
-    // If user is at `store.user.user`, change this back to `store.user?.user`.
     const loggedInUser = useSelector(store => store.user);
-
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchConnections = async () => {
             try {
-                const res = await axios.get(`${BASE_URL}/user/connections`, {
-                    withCredentials: true,
-                });
-                // Your reducer will put `res.data.data` into the `connections` slice
+                const res = await axios.get(`${BASE_URL}/user/connections`, { withCredentials: true });
                 dispatch(addConnections(res.data.data));
             } catch (err) {
                 console.error("Failed to fetch connections:", err);
             }
         };
-
-        // This logic is now sound. It will run once `loggedInUser` is populated.
         if (loggedInUser && connections.length === 0) {
             fetchConnections();
         }
     }, [dispatch, connections.length, loggedInUser]);
 
-    // --- GUARD CLAUSE ---
-    // If the app is still loading the logged in user, show loading state.
+    const handleRemoveConnection = (e, connectionId) => {
+        // This stops the click from navigating to the profile page
+        e.stopPropagation();
+        e.preventDefault();
+        console.log("Removing connection:", connectionId);
+        // Here you would add your API call to remove the connection
+        // and then dispatch an action to update the Redux store.
+    };
+
+    const handleChatClick = (e, userId) => {
+        e.stopPropagation();
+        e.preventDefault();
+        navigate(`/chat/${userId}`);
+    };
+
     if (!loggedInUser) {
-        return (
-            <div className="text-center p-8">
-                <p>Loading your profile...</p>
-                <span className="loading loading-lg loading-spinner text-primary mt-4"></span>
-            </div>
-        );
+        return <div className="text-center p-8 text-slate-600">Loading...</div>;
     }
     
-    // After fetch, if connections array is still empty, show "No Connections".
-    // This now correctly checks the populated array.
     if (connections.length === 0) {
         return (
-            <div className="text-center p-12 bg-base-200 rounded-lg">
-                <h2 className="text-2xl font-bold">No Connections Yet</h2>
-                <p className="text-base-content/70 mt-2">
-                    Start exploring and connect with other developers!
-                </p>
-                <Link to="/" className="btn btn-primary mt-6">Find Developers</Link>
+            <div className="text-center p-12 bg-white/20 backdrop-blur-lg rounded-2xl">
+                <h2 className="text-2xl font-bold text-slate-800">No Connections Yet</h2>
+                <p className="text-slate-600 mt-2">Start exploring and connect with other developers!</p>
+                <Link to="/" className="btn-form-primary-light inline-block mt-6">Find Developers</Link>
             </div>
         );
     }
 
-    // This will now render correctly!
     return (
-        <div className="space-y-4">
+        // THE NEW GRID LAYOUT
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
             {connections.map((connection) => {
                 const otherUser = connection.fromUserId._id === loggedInUser._id
                     ? connection.toUserId
                     : connection.fromUserId;
 
                 if (!otherUser) return null;
-
-                const { _id, firstName, lastName, photoUrl, about } = otherUser;
+                const { _id, firstName, lastName, photoUrl } = otherUser;
 
                 return (
-                    <div
-                        key={connection._id}
-                        className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border border-base-200 rounded-lg hover:bg-base-200 transition-colors"
-                    >
-                        <div className="flex items-center gap-4 flex-grow">
-                            <div className="avatar">
-                                <div className="w-16 rounded-full">
-                                    <img
-                                        src={photoUrl || `https://ui-avatars.com/api/?name=${firstName}+${lastName}`}
-                                        alt={`${firstName} ${lastName}`}
-                                    />
+                    // Each grid item is a link to the user's profile
+                    <Link to={`/users/${_id}`} key={connection._id} className="group relative aspect-square block w-full overflow-hidden rounded-2xl shadow-lg">
+                        
+                        {/* The User's Photo */}
+                        <img
+                            src={photoUrl || `https://ui-avatars.com/api/?name=${firstName}+${lastName}`}
+                            alt={`${firstName} ${lastName}`}
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                        />
+                        
+                        {/* The Hover Overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            {/* Content inside the overlay */}
+                            <div className="absolute bottom-0 left-0 p-4 w-full text-white">
+                                <h3 className="font-bold text-lg">{firstName} {lastName}</h3>
+                                <div className="flex items-center gap-2 mt-2">
+                                    <button onClick={(e) => handleChatClick(e, _id)} className="btn-connection-action">
+                                        <HiOutlineChatAlt2 size={20}/>
+                                    </button>
+                                    <button onClick={(e) => handleRemoveConnection(e, connection._id)} className="btn-connection-action">
+                                        <HiOutlineTrash size={20}/>
+                                    </button>
                                 </div>
                             </div>
-                            <div>
-                                <h3 className="font-bold text-lg">{firstName} {lastName}</h3>
-                                <p className="text-sm text-base-content/70 line-clamp-1">
-                                    {about || "No bio available."}
-                                </p>
-                            </div>
                         </div>
-
-                        <div className="flex gap-2 items-center shrink-0">
-                            <Link to={"/chat/" + _id}>
-                                <button className="btn btn-sm btn-primary">Chat</button>
-                            </Link>
-                            <Link to={`/users/${_id}`} className="btn btn-sm btn-outline">
-                                <FaEye />
-                                Profile
-                            </Link>
-                            <button className="btn btn-sm btn-ghost btn-square text-error">
-                                <FaUserTimes />
-                            </button>
-                        </div>
-                    </div>
+                    </Link>
                 );
             })}
         </div>

@@ -1,58 +1,61 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import axios from "axios";
 import createSocketConnection from "../utils/socket";
 import { BASE_URL } from "../utils/contants";
+import { HiOutlinePaperAirplane } from "react-icons/hi";
 
 const Chat = () => {
   const { targetUserId } = useParams();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
+  const [targetUser, setTargetUser] = useState(null);
   const user = useSelector((store) => store.user);
   const userId = user?._id;
 
   const socketRef = useRef(null);
+  const messagesEndRef = useRef(null);
 
-  const fetchChatMessages = async () => {
-    const chat = await axios.get(BASE_URL + "/chat/" + targetUserId, {
-      withCredentials: true,
-    });
-
-    const chatMessages = chat?.data?.messages.map((msg) => {
-      const { senderId, text } = msg;
-      return {
-        senderId: senderId?._id,
-        firstName: senderId?.firstName,
-        lastName: senderId?.lastName,
-        text,
-      };
-    });
-
-    setMessages(chatMessages);
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
-    fetchChatMessages();
-  }, []);
+    const fetchInitialData = async () => {
+      if (!targetUserId) return;
+      try {
+        const userRes = await axios.get(
+          `${BASE_URL}/get-user-by-id/${targetUserId}`,
+          { withCredentials: true }
+        );
+        setTargetUser(userRes.data.data);
+
+        const chat = await axios.get(`${BASE_URL}/chat/${targetUserId}`, {
+          withCredentials: true,
+        });
+        const chatMessages = chat?.data?.messages.map((msg) => ({
+          senderId: msg.senderId?._id || msg.senderId,
+          text: msg.text,
+        }));
+        setMessages(chatMessages || []);
+      } catch (error) {
+        console.error("Failed to fetch initial chat data:", error);
+      }
+    };
+    fetchInitialData();
+  }, [targetUserId]);
 
   useEffect(() => {
     if (!userId) return;
-
     const socket = createSocketConnection();
     socketRef.current = socket;
+    socket.emit("joinChat", { userId, targetUserId });
 
-    socket.emit("joinChat", {
-      firstName: user.firstName,
-      userId,
-      targetUserId,
-    });
-
-    socket.on("messageReceived", ({ senderId, firstName, lastName, text }) => {
-      setMessages((prev) => [
-        ...prev,
-        { senderId, firstName, lastName, text },
-      ]);
+    socket.on("messageReceived", ({ senderId, text }) => {
+      if (senderId !== userId) {
+        setMessages((prev) => [...prev, { senderId, text }]);
+      }
     });
 
     return () => {
@@ -60,58 +63,88 @@ const Chat = () => {
     };
   }, [userId, targetUserId]);
 
-  const sendMessage = () => {
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const handleSendMessage = (e) => {
+    e.preventDefault();
     if (!socketRef.current || newMessage.trim() === "") return;
 
+    // Send the message to the server
     socketRef.current.emit("sendMessage", {
       senderId: userId,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      userId,
-      targetUserId,
+      targetUserId: targetUserId,
       text: newMessage,
     });
 
+    setMessages((prev) => [...prev, { senderId: userId, text: newMessage }]);
     setNewMessage("");
   };
 
-  return (
-    <div className="w-full max-w-2xl mx-auto h-[80vh] border border-gray-700 rounded-xl flex flex-col bg-gray-900 text-white shadow-lg overflow-hidden">
-      <div className="p-4 border-b border-gray-700 text-xl font-semibold bg-gray-800">
-        Chat with {targetUserId || "Unknown"}
-      </div>
+  if (!targetUser) {
+    return (
+      <div className="text-center p-8 text-slate-600">Loading Chat...</div>
+    );
+  }
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-900">
+  return (
+    <div className="flex flex-col h-[75vh] w-full max-w-3xl mx-auto bg-white/20 backdrop-filter backdrop-blur-2xl border border-white/40 rounded-2xl shadow-2xl overflow-hidden">
+      <header className="flex items-center gap-4 p-4 border-b border-slate-900/10 shrink-0">
+        <Link to={`/users/${targetUser._id}`}>
+          <img
+            src={targetUser.photoUrl || "/default-avatar.png"}
+            alt={targetUser.firstName}
+            className="w-12 h-12 rounded-full object-cover"
+          />
+        </Link>
+        <div>
+          <h2 className="font-bold text-lg text-slate-900">
+            {targetUser.firstName} {targetUser.lastName}
+          </h2>
+          <p className="text-sm text-slate-600">Online</p>
+        </div>
+      </header>
+
+      <div className="flex-grow p-4 space-y-4 overflow-y-auto">
         {messages.map((msg, index) => (
           <div
             key={index}
-            className={
-              "chat " +
-              (userId === msg.senderId ? "chat-end" : "chat-start")
-            }
+            className={`flex ${
+              userId === msg.senderId ? "justify-end" : "justify-start"
+            }`}
           >
-            <div className="chat-header text-sm text-gray-400 mb-1">
-              {`${msg.firstName} ${msg.lastName}`}
-              <span className="text-xs opacity-50 ml-2">2h ago</span>
+            <div
+              className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
+                userId === msg.senderId
+                  ? "chat-bubble-outgoing"
+                  : "chat-bubble-incoming"
+              }`}
+            >
+              <p>{msg.text}</p>
             </div>
-            <div className="chat-bubble bg-blue-600 text-white">{msg.text}</div>
-            <div className="chat-footer text-xs opacity-50 mt-1">Seen</div>
           </div>
         ))}
+        <div ref={messagesEndRef} />
       </div>
 
-      <div className="p-4 border-t border-gray-700 bg-gray-800 flex gap-2">
-        <input
-          type="text"
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Type a message"
-          className="flex-1 rounded px-4 py-2 bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <button onClick={sendMessage} className="btn btn-secondary">
-          Send
-        </button>
-      </div>
+      <footer className="p-4 border-t border-slate-900/10 shrink-0">
+        <form onSubmit={handleSendMessage} className="flex items-center gap-3">
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Type a message..."
+            className="input-form-light w-full"
+          />
+          <button
+            type="submit"
+            className="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full bg-pink-500 text-white hover:bg-pink-600 transition-all transform hover:scale-110"
+          >
+            <HiOutlinePaperAirplane size={24} className="-rotate-45" />
+          </button>
+        </form>
+      </footer>
     </div>
   );
 };

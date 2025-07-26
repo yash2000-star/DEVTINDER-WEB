@@ -1,8 +1,108 @@
+/* In your src/index.css file */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-.bg-soft-gradient {
-  background-color: #f0f2ff; 
-  background-image: linear-gradient(135deg, #e9e7fd 0%, #dde7f9 00%);
+@layer components {
+
+  /* === STYLES FOR THE LIGHT-THEMED LOGIN PAGE === */
+  .input-field-light {
+    @apply w-full bg-white/30 border border-white/50 rounded-lg py-3 px-4 text-slate-800 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all;
+  }
+  .btn-primary-light {
+    @apply w-full bg-slate-800 text-white font-bold py-3 rounded-full hover:bg-slate-900 transition-transform transform hover:scale-105 shadow-lg;
+  }
+  .social-btn-light {
+    @apply w-12 h-12 flex items-center justify-center bg-white/40 border border-white/60 rounded-full text-white text-xl hover:bg-white/70 transition-all;
+  }
+
+  /* === STYLES FOR DARK-THEMED COMPONENTS (Legacy, might be removed later) === */
+  .input-field-dark {
+    @apply w-full bg-white/5 border border-white/20 rounded-lg py-3 px-4 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all;
+  }
+  .btn-profile-primary {
+    @apply w-full py-3 px-4 rounded-xl bg-white/20 border border-white/30 text-white font-semibold hover:bg-white/30 transition-colors duration-300;
+  }
+  .btn-profile-secondary {
+    @apply w-full py-3 px-4 rounded-xl bg-white/5 border border-white/20 text-white/80 font-semibold hover:bg-white/10 transition-colors duration-300;
+  }
+  .menu-item {
+    @apply block w-full text-left p-2 rounded-lg hover:bg-white/10 transition-colors text-white/80;
+  }
+
+  /* === STYLES FOR LIGHT THEME APP UI (Profile Card, Navbar, etc.) === */
+  
+  /* Main action button for the light theme profile card */
+  .btn-profile-main-action-light {
+    @apply w-full py-3 px-4 rounded-full bg-slate-900/5 border border-slate-900/10 text-slate-800 font-bold text-lg hover:bg-slate-900/10 transition-colors duration-300;
+  }
+
+  /* Social media icon style for the light theme */
+  .social-icon-profile-light {
+    @apply w-12 h-12 flex items-center justify-center rounded-full bg-slate-900/5 border border-slate-900/10 text-slate-500 hover:bg-slate-900/10 hover:text-slate-800 transition-all;
+  }
+  
+  /* Menu item for the light theme dropdown */
+  .menu-item-light {
+    @apply block w-full text-left p-2 rounded-lg hover:bg-black/10 transition-colors text-slate-700;
+  }
+
+  /* === NEW: STYLES FOR LIGHT THEME EDIT FORM === */
+
+  /* Input field for light-themed forms */
+  .input-form-light {
+    @apply w-full bg-slate-900/5 border border-slate-900/10 rounded-lg py-3 px-4 text-slate-800 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all;
+  }
+
+  /* Primary "Save" button for light-themed forms */
+  .btn-form-primary-light {
+    @apply py-3 px-6 rounded-lg bg-slate-800 text-white font-semibold hover:bg-slate-900 transition-colors duration-300;
+  }
+
+  /* Secondary "Cancel" button for light-themed forms */
+  .btn-form-secondary-light {
+    @apply py-3 px-6 rounded-lg bg-slate-900/10 text-slate-700 font-semibold hover:bg-slate-900/20 transition-colors duration-300;
+  }
+  /* In index.css, inside @layer components */
+
+/* === NEW: STYLE FOR CONNECTION CARD ACTION BUTTONS === */
+
+.btn-connection-action {
+  @apply h-10 w-10 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all;
+}
+
+.btn-feed-action {
+  @apply w-20 h-20 flex items-center justify-center rounded-full shadow-lg transition-transform transform hover:scale-110;
+}
+
+/* Pink button for Silver Membership */
+.btn-premium-pink {
+  @apply w-full py-3 px-4 rounded-lg bg-pink-500 text-white font-bold text-lg hover:bg-pink-600 transition-all transform hover:scale-105;
+}
+
+/* Blue/Purple button for Gold Membership */
+.btn-premium-blue {
+  @apply w-full py-3 px-4 rounded-lg bg-indigo-600 text-white font-bold text-lg hover:bg-indigo-700 transition-all transform hover:scale-105;
+}
+
+/* === NEW: STYLE FOR REQUEST PAGE ACTION BUTTONS === */
+
+.btn-request-action {
+  @apply w-10 h-10 flex items-center justify-center rounded-full transition-all transform hover:scale-110;
+}
+
+/* === STYLES FOR CHAT BUBBLES === */
+
+/* Style for messages YOU send (outgoing) */
+.chat-bubble-outgoing {
+  @apply bg-pink-500 text-white rounded-br-none;
+}
+
+/* Style for messages you RECEIVE (incoming) */
+.chat-bubble-incoming {
+  @apply bg-white/50 text-slate-800 rounded-bl-none;
+}
+
+
 }

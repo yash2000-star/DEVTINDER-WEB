@@ -1,8 +1,7 @@
-// src/components/NavBar.jsx
-
-import axios from "axios";
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
 import { BASE_URL } from "../utils/contants";
 import { removeUser } from "../utils/userSlice";
 
@@ -11,6 +10,7 @@ const NavBar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation(); 
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -26,73 +26,40 @@ const NavBar = () => {
     { name: "Profile", path: "/profile" },
     { name: "Connections", path: "/connections" },
     { name: "Requests", path: "/requests" },
-    // You can add more links like 'Jobs' or 'Messaging' here in the future
   ];
 
   if (!user) return null; 
+
   return (
-    <header className="flex justify-between items-center border-b border-base-200 pb-4">
-      
+    <header className="flex justify-between items-center py-5">
       <div className="flex items-center gap-8">
-        <Link to="/" className="text-2xl font-bold text-primary">
-          DevTinder
-        </Link>
-        <nav className="hidden md:flex items-center gap-6">
+        <Link to="/" className="text-3xl font-bold tracking-wider text-slate-900">DevTinder</Link>
+        <nav className="hidden md:flex items-center gap-6 text-lg text-slate-600">
           {navLinks.map((link) => (
-            <Link
-              key={link.path}
-              to={link.path}
-              className={`pb-1 text-lg hover:text-primary transition-colors ${
-                location.pathname.startsWith(link.path)
-                  ? "text-primary font-semibold border-b-2 border-primary"
-                  : "text-base-content/70"
-              }`}
-            >
+            <Link key={link.path} to={link.path} className={`transition-colors hover:text-slate-900 ${location.pathname.startsWith(link.path) ? "text-pink-600 font-semibold" : ""}`}>
               {link.name}
             </Link>
           ))}
         </nav>
       </div>
 
-      <div className="dropdown dropdown-end">
-        <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
-          <div className="w-12 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-            <img
-              src={user.photoUrl || `https://ui-avatars.com/api/?name=${user.firstName}+${user.lastName}`}
-              alt="User avatar"
-            />
-          </div>
-        </label>
+      <div className="relative">
+        <button onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="w-12 h-12 rounded-full ring-2 ring-pink-500/50 focus:outline-none focus:ring-pink-500">
+        <img src={user.photoUrl || '/default-avatar.png'} alt="User avatar" className="w-full h-full rounded-full object-cover"/>
+        </button>
         
-        <ul
-          tabIndex={0}
-          className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52"
-        >
-          <li className="p-2">
-            <p className="font-semibold">Welcome,{user.firstName}</p>
-          </li>
-          <div className="divider my-0"></div>
-          <li>
-            <Link to="/profile">
-              Profile
-            </Link>
-          </li>
-          <li>
-            <Link to="/connections">Connections</Link>
-          </li>
-          <li>
-            <Link to="/requests">Requests</Link>
-          </li>
-          <li>
-            <Link to="/premium">Premium</Link>
-          </li>
-          <div className="divider my-0"></div>
-          <li>
-            <button onClick={handleLogout} className="text-error">
-              Logout
-            </button>
-          </li>
-        </ul>
+        {isDropdownOpen && (
+          <ul className="absolute right-0 mt-3 z-10 p-2 shadow-2xl menu w-52 bg-white/40 backdrop-blur-lg border border-white/50 rounded-box">
+            <li className="p-2 text-slate-800 font-semibold">Welcome, {user.firstName}</li>
+            <div className="h-[1px] bg-slate-900/10 my-1"></div>
+            <li><Link to="/profile" className="menu-item-light">Profile</Link></li>
+            <li><Link to="/connections" className="menu-item-light">Connections</Link></li>
+            <li><Link to="/requests" className="menu-item-light">Requests</Link></li>
+            <li><Link to="/premium" className="menu-item-light">Premium</Link></li>
+            <div className="h-[1px] bg-slate-900/10 my-1"></div>
+            <li><button onClick={handleLogout} className="menu-item-light text-red-600 w-full text-left">Logout</button></li>
+          </ul>
+        )}
       </div>
     </header>
   );

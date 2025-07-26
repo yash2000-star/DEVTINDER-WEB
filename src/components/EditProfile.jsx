@@ -1,100 +1,55 @@
-// src/components/EditProfile.jsx
+import React, { useState } from 'react';
+import axios from 'axios';
+import { BASE_URL } from '../utils/contants';
 
-import { useState } from "react";
-import axios from "axios";
-import { BASE_URL } from "../utils/contants";
-import { useDispatch } from "react-redux";
-import { addUser } from "../utils/userSlice";
+const EditProfile = ({ user, onSave, onCancel }) => {
+    const [formData, setFormData] = useState({
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        about: user.about || '',
+        photoUrl: user.photoUrl || '',
+    });
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-const EditProfile = ({ user }) => {
-    const [firstName, setFirstName] = useState(user.firstName);
-    const [lastName, setLastName] = useState(user.lastName);
-    const [age, setAge] = useState(user.age || "");
-    const [gender, setGender] = useState(user.gender || ""); 
-    const [about, setAbout] = useState(user.about);
-    const [error, setError] = useState("");
-    const dispatch = useDispatch();
-    const [showToast, setShowToast] = useState(false);
-    
-    const saveProfile = async () => {
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setIsSubmitting(true);
         try {
-            const res = await axios.patch(BASE_URL + "/profile/edit", {
-                firstName, 
-                lastName, 
-                photoUrl: user.photoUrl, 
-                age: Number(age), 
-                gender, 
-                about 
-            }, { withCredentials: true });
-            dispatch(addUser(res?.data?.data));
-            setError(""); 
-            setShowToast(true);
-            setTimeout(() => {
-                setShowToast(false);
-            }, 3000);
-        } catch (err) {
-            setError(err?.response?.data || "Failed to save profile.");
+          console.log("Saving data:", formData);
+          onSave(formData); 
+        } catch (error) {
+          console.error("Failed to update profile:", error);
+        } finally {
+          setIsSubmitting(false);
         }
     };
 
     return (
-        <>
-            <form className="space-y-4 max-w-2xl mx-auto">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="form-control">
-                        <label className="label"><span className="label-text">First Name</span></label>
-                        <input type="text" className="input input-bordered w-full" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
-                    </div>
-                    <div className="form-control">
-                        <label className="label"><span className="label-text">Last Name</span></label>
-                        <input type="text" className="input input-bordered w-full" value={lastName} onChange={(e) => setLastName(e.target.value)} />
-                    </div>
+        <div className="max-w-xl bg-white/20 backdrop-filter backdrop-blur-2xl border border-white/40 rounded-3xl shadow-2xl p-8 text-slate-800">
+            <h2 className="text-3xl font-bold mb-8 text-center text-slate-900">Edit Your Profile</h2>
+            <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="flex flex-col sm:flex-row gap-6">
+                    {/* UPDATED: Using the new light-themed input class */}
+                    <input type="text" name="firstName" value={formData.firstName} onChange={handleChange} placeholder="First Name" className="input-form-light w-full" />
+                    <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} placeholder="Last Name" className="input-form-light w-full" />
                 </div>
-
-                <div className="form-control">
-                    <label className="label"><span className="label-text">Profile Photo</span></label>
-                    <input type="file" className="file-input file-input-bordered w-full max-w-xs" />
-                    <p className="text-xs text-base-content/60 mt-1">Note: Photo upload is for UI demo purposes.</p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="form-control">
-                        <label className="label"><span className="label-text">Age</span></label>
-                        <input type="number" className="input input-bordered w-full" value={age} onChange={(e) => setAge(e.target.value)} />
-                    </div>
-                    <div className="form-control">
-                        <label className="label"><span className="label-text">Gender</span></label>
-                        <select className="select select-bordered w-full" value={gender} onChange={(e) => setGender(e.target.value)}>
-                            <option value="" disabled>Select...</option>
-                            <option>Male</option>
-                            <option>Female</option>
-                            <option>Other</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div className="form-control">
-                    <label className="label"><span className="label-text">About</span></label>
-                    <textarea className="textarea textarea-bordered h-24" placeholder="Tell us about yourself" value={about} onChange={(e) => setAbout(e.target.value)} />
-                </div>
-
-                {error && <p className="text-error text-center text-sm">{error}</p>}
-
-                <div className="flex justify-end pt-4">
-                    <button type="button" className="btn btn-primary" onClick={saveProfile}>
-                        Save Profile
+                <input type="text" name="photoUrl" value={formData.photoUrl} onChange={handleChange} placeholder="Photo URL" className="input-form-light w-full" />
+                <textarea name="about" value={formData.about} onChange={handleChange} placeholder="About Me / Headline" className="input-form-light w-full min-h-[120px]"></textarea>
+                
+                <div className="flex justify-end gap-4 pt-4">
+                    {/* UPDATED: Using new light-themed button classes */}
+                    <button type="button" onClick={onCancel} className="btn-form-secondary-light">Cancel</button>
+                    <button type="submit" disabled={isSubmitting} className="btn-form-primary-light">
+                        {isSubmitting ? 'Saving...' : 'Save Changes'}
                     </button>
                 </div>
             </form>
-
-            {showToast && (
-                <div className="toast toast-top toast-end">
-                    <div className="alert alert-success">
-                        <span>Profile saved successfully!</span>
-                    </div>
-                </div>
-            )}
-        </>
+        </div>
     );
 };
 

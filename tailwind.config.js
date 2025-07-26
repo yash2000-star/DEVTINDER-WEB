@@ -1,55 +1,29 @@
-/** @type {import('tailwindcss').Config} */
+// tailwind.config.js
+
 module.exports = {
- 
+  //... your existing content
   content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
     extend: {
+      colors: {
+        'primary-black': '#1c1c1e',
+        'ios-blue': '#007aff',
+        'subtle-gray': '#666',
+        'light-gray-border': '#e0e0e0',
+      },
       fontFamily: {
-        sans: ['Poppins', 'sans-serif'],
+        // Add Poppins and fallback to system sans-serif fonts
+        poppins: ['Poppins', 'sans-serif'],
+      },
+      borderRadius: {
+        '4xl': '2.5rem', // 40px, for the screen container
       },
     },
   },
   plugins: [
-    require("daisyui")
+    require("daisyui") // Make sure daisyui is here
   ],
-
-  daisyui: {
-    themes: [
-      {
-        'devtinder-light': { 
-          "primary": "#3B82F6", 
-
-          "secondary": "#1E40AF",
-          
-          "accent": "#3B82F6",
-          
-          "neutral": "#F3F4F6",
-          
-          "base-100": "#FFFFFF", 
-          
-          "base-content": "#1F2937", 
-
-          "info": "#3ABFF8",
-          "success": "#4ADE80",
-          "warning": "#FBBD23",
-          "error": "#F87272",
-        },
-        devtinder: {
-          "primary": "#8B5CF6",
-          "secondary": "#3730A3",
-          "accent": "#A78BFA",
-          "neutral": "#1F2937",
-          "base-100": "#111827",
-          "base-content": "#E5E7EB",
-          "info": "#3ABFF8",
-          "success": "#36D399",
-          "warning": "#FBBD23",
-          "error": "#F87272",
-        },
-      },
-    ],
-  },
+  //... your existing daisyui config
 }
